@@ -100,7 +100,7 @@ public class AsyncSerializationManager {
                 this.lightType = type;
                 for (int i = -1; i < 17; i++) {
                     final ChunkSectionPos sectionPos = ChunkSectionPos.from(pos, i);
-                    ChunkNibbleArray lighting = provider.get(type).getLightSection(sectionPos);
+                    ChunkNibbleArray lighting = provider.get(type).getLightArray(sectionPos);
                     cachedData.put(sectionPos, lighting != null ? lighting.copy() : null);
                 }
             }
@@ -110,13 +110,13 @@ public class AsyncSerializationManager {
             }
 
             @Override
-            public void setSectionStatus(ChunkSectionPos pos, boolean notReady) {
+            public void updateSectionStatus(ChunkSectionPos pos, boolean notReady) {
                 throw new UnsupportedOperationException();
             }
 
             @NotNull
             @Override
-            public ChunkNibbleArray getLightSection(ChunkSectionPos pos) {
+            public ChunkNibbleArray getLightArray(ChunkSectionPos pos) {
                 return cachedData.getOrDefault(pos, EMPTY);
             }
 
