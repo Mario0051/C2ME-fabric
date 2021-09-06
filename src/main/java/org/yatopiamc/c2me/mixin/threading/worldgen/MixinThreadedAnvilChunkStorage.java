@@ -39,17 +39,17 @@ public class MixinThreadedAnvilChunkStorage {
 
     private final ThreadLocal<ChunkStatus> capturedRequiredStatus = new ThreadLocal<>();
 
-    @Inject(method = "upgradeChunk", at = @At("HEAD"))
+    @Inject(method = "generateChunk", at = @At("HEAD"))
     private void onUpgradeChunk(ChunkHolder holder, ChunkStatus requiredStatus, CallbackInfoReturnable<CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>>> cir) {
         capturedRequiredStatus.set(requiredStatus);
     }
 
-    @Redirect(method = "makeChunkEntitiesTickable", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenApplyAsync(Ljava/util/function/Function;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
+    @Redirect(method = "createEntityTickingChunkFuture", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenApplyAsync(Ljava/util/function/Function;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
     private <U, T> CompletableFuture<U> redirectMainThreadExecutor1(CompletableFuture<T> completableFuture, Function<? super T, ? extends U> fn, Executor executor) {
         return completableFuture.thenApplyAsync(fn, this.mainInvokingExecutor);
     }
 
-    @Redirect(method = "getChunk", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenComposeAsync(Ljava/util/function/Function;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
+    @Redirect(method = "createChunkFuture", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenComposeAsync(Ljava/util/function/Function;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
     private <T, U> CompletableFuture<U> redirectMainThreadExecutor2(CompletableFuture<T> completableFuture, Function<? super T, ? extends CompletionStage<U>> fn, Executor executor) {
         return completableFuture.thenComposeAsync(fn, this.mainInvokingExecutor);
     }
@@ -65,7 +65,7 @@ public class MixinThreadedAnvilChunkStorage {
         final ChunkStatus capturedStatus = capturedRequiredStatus.get();
         capturedRequiredStatus.remove();
         if (capturedStatus != null) {
-            final Chunk currentChunk = chunkHolder.getCurrentChunk();
+            final Chunk currentChunk = chunkHolder.getCompletedChunk();
             if (currentChunk != null && currentChunk.getStatus().isAtLeast(capturedStatus)) {
                 this.mainInvokingExecutor.execute(runnable);
                 return;
