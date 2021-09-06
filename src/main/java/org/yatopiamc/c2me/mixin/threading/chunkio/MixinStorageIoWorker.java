@@ -60,7 +60,7 @@ public abstract class MixinStorageIoWorker implements IAsyncChunkStorage {
 
     private final AtomicReference<ExecutorService> executorService = new AtomicReference<>();
 
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getIoWorkerExecutor()Ljava/util/concurrent/Executor;"))
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;method_27958()Ljava/util/concurrent/Executor;"))
     private Executor onGetStorageIoWorker() {
         executorService.set(Executors.newSingleThreadExecutor(ChunkIoThreadingExecutorUtils.ioWorkerFactory));
         return executorService.get();
