@@ -1,7 +1,6 @@
 package org.yatopiamc.c2me.mixin.optimization.worldgen.global_biome_cache;
 
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeArray;
 import net.minecraft.world.biome.source.BiomeLayerSampler;
@@ -24,8 +23,6 @@ public abstract class MixinVanillaLayeredBiomeSource extends BiomeSource impleme
 
     @Shadow @Final private BiomeLayerSampler biomeSampler;
 
-    @Shadow @Final private Registry<Biome> biomeRegistry;
-
     protected MixinVanillaLayeredBiomeSource(List<Biome> biomes) {
         super(biomes);
     }
@@ -34,7 +31,7 @@ public abstract class MixinVanillaLayeredBiomeSource extends BiomeSource impleme
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        this.cacheImpl = new BiomeCache(biomeSampler, biomeRegistry, biomes);
+        this.cacheImpl = new BiomeCache(biomeSampler, biomes);
     }
 
     /**
