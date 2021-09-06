@@ -1,8 +1,8 @@
 package org.yatopiamc.c2me.mixin.threading.chunkio;
 
 import com.mojang.serialization.DynamicOps;
+import net.minecraft.datafixer.NbtOps;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.storage.SerializingRegionBasedStorage;
 import org.jetbrains.annotations.Nullable;
