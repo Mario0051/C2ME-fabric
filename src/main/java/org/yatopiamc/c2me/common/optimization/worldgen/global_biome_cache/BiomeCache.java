@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeArray;
 import net.minecraft.world.biome.source.BiomeLayerSampler;
@@ -18,13 +17,10 @@ public class BiomeCache {
 
     public static final UnfairExecutor EXECUTOR = new UnfairExecutor(2, new ThreadFactoryBuilder().setNameFormat("C2ME biomes #%d").setDaemon(true).setPriority(Thread.NORM_PRIORITY - 1).build());
 
-    private final Registry<Biome> registry;
-
     private final UncachedBiomeSource uncachedBiomeSource;
 
-    public BiomeCache(BiomeLayerSampler sampler, Registry<Biome> registry, List<Biome> biomes) {
-        this.registry = registry;
-        this.uncachedBiomeSource = new UncachedBiomeSource(biomes, sampler, registry);
+    public BiomeCache(BiomeLayerSampler sampler, List<Biome> biomes) {
+        this.uncachedBiomeSource = new UncachedBiomeSource(biomes, sampler);
     }
 
     private final LoadingCache<ChunkPos, BiomeArray> biomeCache = CacheBuilder.newBuilder()
@@ -33,7 +29,7 @@ public class BiomeCache {
             .build(new CacheLoader<>() {
                 @Override
                 public BiomeArray load(ChunkPos key) {
-                    return new BiomeArray(registry, key, uncachedBiomeSource);
+                    return new BiomeArray(key, uncachedBiomeSource);
                 }
             });
 
