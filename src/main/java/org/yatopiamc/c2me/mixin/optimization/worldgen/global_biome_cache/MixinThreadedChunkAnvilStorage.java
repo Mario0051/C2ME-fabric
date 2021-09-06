@@ -25,7 +25,7 @@ public abstract class MixinThreadedChunkAnvilStorage {
 
     @Shadow @Final private ChunkGenerator chunkGenerator;
 
-    @Redirect(method = "getChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;loadChunk(Lnet/minecraft/util/math/ChunkPos;)Ljava/util/concurrent/CompletableFuture;"))
+    @Redirect(method = "createChunkFuture", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;loadChunk(Lnet/minecraft/util/math/ChunkPos;)Ljava/util/concurrent/CompletableFuture;"))
     private CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> redirectLoadChunk(ThreadedAnvilChunkStorage threadedAnvilChunkStorage, ChunkPos pos) {
         return this.loadChunk(pos).thenApplyAsync(either -> {
             if (chunkGenerator.getBiomeSource() instanceof IVanillaLayeredBiomeSource source) {
