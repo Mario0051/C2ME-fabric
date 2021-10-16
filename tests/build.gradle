@@ -1,0 +1,72 @@
+allprojects {
+    apply plugin: 'com.ishland.curseforge.modpackresolver'
+    apply plugin: 'fabric-loom'
+    apply plugin: 'io.github.juuxel.loom-quiltflower'
+    apply plugin: 'java-library'
+
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = JavaVersion.VERSION_16
+
+    group = project.maven_group + ".tests"
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://nexus.resourcefulbees.com/repository/maven-public/" }
+        maven { url "https://maven.terraformersmc.com/releases/" }
+        maven { url "https://maven.shedaniel.me/" }
+        maven { url "https://ladysnake.jfrog.io/artifactory/mods/" }
+        maven { url "https://jitpack.io" }
+        maven {
+            url "https://api.modrinth.com/maven/"
+            content { includeGroup "maven.modrinth" }
+        }
+        maven {
+            url "https://www.cursemaven.com"
+            content { includeGroup "curse.maven" }
+        }
+    }
+    loom {
+        shareRemapCaches = true
+    }
+    afterEvaluate {
+        migrateMappings.configure {
+            outputDir = project.file("src/main/java")
+        }
+    }
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+    dependencies {
+        minecraft "com.mojang:minecraft:${project.minecraft_version}"
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+        modApi 'com.github.astei:lazydfu:0.1.2'
+        modApi 'com.github.PaperMC:Starlight:1.0.0-RC2'
+        implementation "com.ibm.async:asyncutil:${async_util_version}"
+    }
+    processResources {
+        inputs.property "version", project.version
+
+        filesMatching("fabric.mod.json") {
+            expand "version": project.version
+        }
+    }
+    afterEvaluate {
+        tasks.forEach {
+            if (it.getName() == "remapJar"
+                    || it.getName() == "remapSourcesJar"
+                    || it.getName() == "runClient"
+                    || it.getName() == "runServer"
+                    || it.getName() == "build") {
+                it.onlyIf { false }
+                it.enabled = false
+            }
+        }
+    }
+}
+
+migrateMappings.onlyIf { false }
+
+test {
+    useJUnitPlatform()
+}

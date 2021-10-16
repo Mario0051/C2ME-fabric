@@ -1,0 +1,40 @@
+name: C2ME Test
+
+on:
+  push: {}
+  pull_request: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        testTask: [runTestC2MEModpackServer,runTestC2MEServer,runTestC2MEAOFServer]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK 16
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'zulu'
+        java-version: 16
+        java-package: jdk
+        
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          ./.gradle/loom-cache
+        key: ${{ runner.os }}-gradle3-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle3-
+        
+    - name: Test C2ME
+      run: |
+        ./gradlew clean ${{ matrix.testTask }}

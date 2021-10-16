@@ -1,10 +1,8 @@
 name: C2ME Build Script
 
 on:
-  push:
-    branches: [ ver/1.16.1 ]
-  pull_request:
-    branches: [ ver/1.16.1 ]
+  push: {}
+  pull_request: {}
 
 jobs:
   build:
@@ -13,6 +11,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
     - name: Set up JDK 16
       uses: actions/setup-java@v1
       with:
@@ -23,14 +24,20 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          ./.gradle/loom-cache
+        key: ${{ runner.os }}-gradle3-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-gradle-
+          ${{ runner.os }}-gradle3-
         
     - name: Build C2ME
       run: |
-        ./gradlew clean build
-        
+        ./gradlew clean build --stacktrace
+
+    - name: Run FOSSA
+      uses: fossa-contrib/fossa-action@v1
+      with:
+        fossa-api-key: 46711dc8ef0a8d57d06010c8148bb6ea
+
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
       with:

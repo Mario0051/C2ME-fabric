@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ishland.c2me.tests.worlddiff.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixinPriority": 1100,
+  "mixins": [
+    "IStorageIoWorker",
+    "IWorldUpdater",
+    "MixinMain",
+    "MixinWorldUpdater"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "setSourceFile": true
+}

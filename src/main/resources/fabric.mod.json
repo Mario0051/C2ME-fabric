@@ -5,32 +5,39 @@
   "name": "Concurrent Chunk Management Engine",
   "description": "A Fabric mod designed to improve the chunk performance of Minecraft.",
   "authors": [
-    "YatopiaMC",
+    "ishlandbukkit",
     "ishland"
   ],
   "contact": {
-    "website": "https://yatopiamc.org/",
-    "repo": "https://github.com/YatopiaMC/C2ME-fabric"
+    "repo": "https://github.com/ishlandbukkit/C2ME-fabric"
   },
   "license": "MIT",
   "icon": "assets/c2me/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "org.yatopiamc.c2me.C2MEMod"
+      "com.ishland.c2me.C2MEMod"
+    ],
+    "client": [
+      "com.ishland.c2me.client.C2MEClient"
     ]
   },
   "accessWidener" : "c2me.accesswidener",
   "mixins": [
-    "c2me.mixins.json"
+    "c2me.mixins.json",
+    "c2me-compat.mixins.json",
+    "c2me-asm.mixins.json",
+    "c2me.client.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.11.3",
     "java": ">=16",
-    "minecraft": "1.16.x"
+    "minecraft": "=1.16.1"
   },
   "conflicts": {
-    "optifabric": "*"
+    "optifabric": "*",
+    "betterend": [">0.11.0-pre", "<0.10.4-pre"],
+    "betternether": [">5.1.3", "<5.1.3"]
   },
   "breaks": {
     "tic_tacs": "*"
