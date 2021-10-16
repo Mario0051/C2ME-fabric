@@ -1,7 +1,7 @@
 package com.ishland.c2me.client.mixin.uncapvd;
 
 import com.ishland.c2me.common.config.C2MEConfig;
-import net.minecraft.client.option.Option;
+import net.minecraft.client.options.Option;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;

@@ -343,10 +343,10 @@ public class ModPackProvider {
     private static class CachedResolutionResults {
 
         @SerializedName("pluginVersion")
-        private long pluginVersion;
+        private final long pluginVersion;
 
         @SerializedName("modResolutionResults")
-        private List<ModResolutionResult> modResolutionResults;
+        private final List<ModResolutionResult> modResolutionResults;
 
         public CachedResolutionResults(List<ModResolutionResult> modResolutionResults) {
             this.pluginVersion = CURRENT_PLUGIN_VERSION;
@@ -377,13 +377,13 @@ public class ModPackProvider {
         private static class ModResolutionResult {
 
             @SerializedName("modId")
-            private String modId;
+            private final String modId;
 
             @SerializedName("modVersion")
-            private String modVersion;
+            private final String modVersion;
 
             @SerializedName("sha256Hash")
-            private String sha256;
+            private final String sha256;
 
             public ModResolutionResult(String modId, String modVersion, String sha256) {
                 this.modId = modId;

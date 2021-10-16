@@ -5,7 +5,7 @@ import net.fabricmc.loader.api.MappingResolver;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
-
+import com.ishland.c2me.asm.ASMTransformerMakeVolatile.KeyValue;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -167,7 +167,7 @@ public class ASMTransformerMakeVolatile {
         }
     }
 
-    private record KeyValue<K, V>(K key, V value) {
+    record KeyValue<K, V>(K key, V value) {
     }
 
 }

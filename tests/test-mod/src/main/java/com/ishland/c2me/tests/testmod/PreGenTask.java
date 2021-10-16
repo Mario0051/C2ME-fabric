@@ -55,11 +55,10 @@ public class PreGenTask {
         final AtomicInteger locatedBiomes = new AtomicInteger();
         final AtomicInteger locatedStructures = new AtomicInteger();
         System.err.printf("Fetching structure and biome list\n");
-        final List<Biome> biomes = world.getChunkManager().getChunkGenerator().getBiomeSource().getBiomes();
+        final List<Biome> biomes = world.getChunkManager().getChunkGenerator().getBiomeSource().method_28443();
         final Set<StructureFeature<?>> structureFeatures = StructureFeature.STRUCTURES.values().stream()
-                .filter(structureFeature -> ((IChunkGenerator) world.getChunkManager().getChunkGenerator()).getPopulationSource().hasStructureFeature(structureFeature))
+                .filter(structureFeature -> ((IChunkGenerator) world.getChunkManager().getChunkGenerator()).getBiomeSource().hasStructureFeature(structureFeature))
                 .collect(Collectors.toSet());
-        final Registry<Biome> biomeRegistry = world.getRegistryManager().get(Registry.BIOME_KEY);
         System.err.printf("Submitting tasks\n");
         final CompletableFuture<Void> biomeFuture = CompletableFuture.allOf(biomes.stream()
                 .map(biome -> CompletableFuture.runAsync(() -> {
@@ -70,7 +69,6 @@ public class PreGenTask {
                         chunks.addAll(createPreGenChunks25(chunkPos, chunksHashed::add));
                         return;
                     }
-                    LOGGER.info("Unable to locate biome {}", biomeRegistry.getId(biome));
                 })).distinct().toArray(CompletableFuture[]::new));
         final CompletableFuture<Void> structureFuture = CompletableFuture.allOf(structureFeatures.stream()
                 .map(structureFeature -> CompletableFuture.runAsync(() -> {
@@ -188,7 +186,7 @@ public class PreGenTask {
         ((IServerChunkManager) world.getChunkManager()).invokeTick();
         final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) world.getChunkManager().threadedAnvilChunkStorage).invokeGetChunkHolder(pos.toLong());
         Preconditions.checkNotNull(chunkHolder, "chunkHolder is null");
-        chunkHolder.getChunkAt(ChunkStatus.FULL, world.getChunkManager().threadedAnvilChunkStorage).thenAcceptAsync(either -> {
+        chunkHolder.createFuture(ChunkStatus.FULL, world.getChunkManager().threadedAnvilChunkStorage).thenAcceptAsync(either -> {
             world.getChunkManager().removeTicket(TICKET, pos, 0, Unit.INSTANCE);
             if (either.left().isPresent())
                 future.complete(null);

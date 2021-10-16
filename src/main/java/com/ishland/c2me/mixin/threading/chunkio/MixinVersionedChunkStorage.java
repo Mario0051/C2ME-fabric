@@ -4,7 +4,7 @@ import com.ibm.asyncutil.locks.AsyncLock;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.SharedConstants;
 import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.FeatureUpdater;
@@ -42,7 +42,7 @@ public abstract class MixinVersionedChunkStorage {
      * @reason async loading
      */
     @Overwrite
-    public NbtCompound updateChunkNbt(RegistryKey<World> registryKey, Supplier<PersistentStateManager> persistentStateManagerFactory, NbtCompound tag) {
+    public CompoundTag updateChunkTag(RegistryKey<World> registryKey, Supplier<PersistentStateManager> persistentStateManagerFactory, CompoundTag tag) {
         // TODO [VanillaCopy] - check when updating minecraft version
         int i = VersionedChunkStorage.getDataVersion(tag);
         if (i < 1493) {
@@ -50,7 +50,7 @@ public abstract class MixinVersionedChunkStorage {
                 tag = NbtHelper.update(this.dataFixer, DataFixTypes.CHUNK, tag, i, 1493);
                 if (tag.getCompound("Level").getBoolean("hasLegacyStructureData")) {
                     if (this.featureUpdater == null) {
-                        this.featureUpdater = FeatureUpdater.create(registryKey, (PersistentStateManager)persistentStateManagerFactory.get());
+                        this.featureUpdater = FeatureUpdater.create(registryKey, persistentStateManagerFactory.get());
                     }
 
                     tag = this.featureUpdater.getUpdatedReferences(tag);
@@ -66,7 +66,7 @@ public abstract class MixinVersionedChunkStorage {
         return tag;
     }
 
-    @Redirect(method = "setNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/FeatureUpdater;markResolved(J)V"))
+    @Redirect(method = "setTagAt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/FeatureUpdater;markResolved(J)V"))
     private void onSetTagAtFeatureUpdaterMarkResolved(FeatureUpdater featureUpdater, long l) {
         try (final AsyncLock.LockToken ignored = featureUpdaterLock.acquireLock().toCompletableFuture().join()) {
             featureUpdater.markResolved(l);

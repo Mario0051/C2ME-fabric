@@ -46,7 +46,7 @@ public class MixinThreadedAnvilChunkStorage implements IThreadedAnvilChunkStorag
     /**
      * reduce scheduling overhead with mainInvokingExecutor
      */
-    @Redirect(method = "makeChunkEntitiesTickable", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenApplyAsync(Ljava/util/function/Function;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
+    @Redirect(method = "createEntityTickingChunkFuture", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;thenApplyAsync(Ljava/util/function/Function;Ljava/util/concurrent/Executor;)Ljava/util/concurrent/CompletableFuture;"))
     private <U, T> CompletableFuture<U> redirectMainThreadExecutor1(CompletableFuture<T> completableFuture, Function<? super T, ? extends U> fn, Executor executor) {
         return completableFuture.thenApplyAsync(fn, this.mainInvokingExecutor);
     }
@@ -59,7 +59,7 @@ public class MixinThreadedAnvilChunkStorage implements IThreadedAnvilChunkStorag
     public void releaseLightTicket(ChunkPos pos) {
         // TODO [VanilaCopy]
         this.mainInvokingExecutor.execute(Util.debugRunnable(() -> {
-            this.ticketManager.removeTicketWithLevel(ChunkTicketType.LIGHT, pos, 33 + ChunkStatus.getDistanceFromFull(ChunkStatus.LIGHT), pos);
+            this.ticketManager.removeTicketWithLevel(ChunkTicketType.LIGHT, pos, 33 + ChunkStatus.getTargetGenerationRadius(ChunkStatus.LIGHT), pos);
         }, () -> {
             return "release light ticket " + pos;
         }));

@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(ChunkHolder.class)
 public abstract class MixinChunkHolder implements IChunkHolder {
 
-    @Shadow public abstract CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> getAccessibleFuture();
+    @Shadow public abstract CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> getBorderFuture();
 
     @Shadow @Nullable public abstract WorldChunk getWorldChunk();
 
@@ -31,7 +31,7 @@ public abstract class MixinChunkHolder implements IChunkHolder {
     @Unique
     @Override
     public WorldChunk getAccessibleChunk() {
-        final Either<WorldChunk, ChunkHolder.Unloaded> either = this.getAccessibleFuture().getNow(null);
+        final Either<WorldChunk, ChunkHolder.Unloaded> either = this.getBorderFuture().getNow(null);
         return either == null ? null : either.left().orElseGet(this::getWorldChunk);
     }
 
@@ -49,19 +49,8 @@ public abstract class MixinChunkHolder implements IChunkHolder {
     @SuppressWarnings("OverwriteTarget")
     @Dynamic
     @Overwrite
-    private static Either<WorldChunk, ChunkHolder.Unloaded> method_20457(ThreadedAnvilChunkStorage threadedAnvilChunkStorage, Either<WorldChunk, ChunkHolder.Unloaded> either) { // TODO lambda expression in tick at this.combineSavingFuture(<this>, "unfull")
+    private static Either<WorldChunk, ChunkHolder.Unloaded> method_20457(ThreadedAnvilChunkStorage threadedAnvilChunkStorage, Either<WorldChunk, ChunkHolder.Unloaded> either) { // TODO lambda expression in tick at this.updateFuture(<this>, "unfull")
         return either; // no-op
-    }
-
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Ljava/util/concurrent/CompletableFuture;complete(Ljava/lang/Object;)Z", ordinal = 0, shift = At.Shift.BEFORE)) // TODO check ordinal when updating minecraft version
-    private void redirectSetTickingFuture(ThreadedAnvilChunkStorage chunkStorage, CallbackInfo ci) {
-        final WorldChunk accessibleChunk = getAccessibleChunk();
-        if (accessibleChunk != null) {
-            chunkStorage.enableTickSchedulers(accessibleChunk);
-        } else {
-//            System.err.println("Unable to set tick scheduler for chunk " + this.getPos());
-            // Vanilla ignores this so we can also ignore this
-        }
     }
 
 }

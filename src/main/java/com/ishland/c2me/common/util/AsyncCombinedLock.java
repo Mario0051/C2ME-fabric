@@ -3,6 +3,7 @@ package com.ishland.c2me.common.util;
 import com.ibm.asyncutil.locks.AsyncLock;
 import com.ibm.asyncutil.locks.AsyncNamedLock;
 import com.ishland.c2me.common.GlobalExecutors;
+import com.ishland.c2me.common.util.AsyncCombinedLock.LockEntry;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.Optional;
@@ -66,7 +67,7 @@ public class AsyncCombinedLock {
         return future.thenApply(Function.identity());
     }
 
-    private record LockEntry(ChunkPos name,
+    record LockEntry(ChunkPos name,
                              Optional<AsyncLock.LockToken> lockToken) {
     }
 }

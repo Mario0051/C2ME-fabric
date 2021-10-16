@@ -34,7 +34,7 @@ public abstract class MixinChunkHolder {
     public static CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> UNLOADED_CHUNK_FUTURE;
 
     @Shadow
-    public static ChunkStatus getTargetStatusForLevel(int level) {
+    public static ChunkStatus getTargetGenerationStatus(int level) {
         throw new UnsupportedOperationException();
     }
 
@@ -42,7 +42,7 @@ public abstract class MixinChunkHolder {
     private int level;
 
     @Shadow
-    protected abstract void combineSavingFuture(CompletableFuture<? extends Either<? extends Chunk, ChunkHolder.Unloaded>> then);
+    protected abstract void updateFuture(CompletableFuture<? extends Either<? extends Chunk, ChunkHolder.Unloaded>> then);
 
     @Shadow
     @Final
@@ -60,7 +60,7 @@ public abstract class MixinChunkHolder {
      * @reason improve handling of async chunk request
      */
     @Overwrite
-    public CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> getChunkAt(ChunkStatus targetStatus, ThreadedAnvilChunkStorage chunkStorage) {
+    public CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> createFuture(ChunkStatus targetStatus, ThreadedAnvilChunkStorage chunkStorage) {
         // TODO [VanillaCopy]
         final ServerChunkManager chunkManager = ((IThreadedAnvilChunkStorage) chunkStorage).getWorld().getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
@@ -78,11 +78,11 @@ public abstract class MixinChunkHolder {
                 }
             }
 
-            if (getTargetStatusForLevel(this.level).isAtLeast(targetStatus)) {
-                CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> completableFuture2 = chunkStorage.getChunk((ChunkHolder) (Object) this, targetStatus);
+            if (getTargetGenerationStatus(this.level).isAtLeast(targetStatus)) {
+                CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> completableFuture2 = chunkStorage.createChunkFuture((ChunkHolder) (Object) this, targetStatus);
                 // synchronization: see below
                 synchronized (this) {
-                    this.combineSavingFuture(completableFuture2);
+                    this.updateFuture(completableFuture2);
                 }
                 this.futuresByStatus.set(i, completableFuture2);
                 return completableFuture2;
@@ -96,10 +96,10 @@ public abstract class MixinChunkHolder {
     }
 
     @Dynamic
-    @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;combineSavingFuture(Ljava/util/concurrent/CompletableFuture;)V"))
+    @Redirect(method = "*", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;updateFuture(Ljava/util/concurrent/CompletableFuture;)V"))
     private void synchronizeCombineSavingFuture(ChunkHolder holder, CompletableFuture<? extends Either<? extends Chunk, ChunkHolder.Unloaded>> then) {
         synchronized (this) {
-            this.combineSavingFuture(then);
+            this.updateFuture(then);
         }
     }
 

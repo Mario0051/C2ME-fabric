@@ -9,7 +9,7 @@ import com.ishland.c2me.compatibility.common.asm.ASMTransformer;
 import com.ishland.c2me.compatibility.common.asm.woodsandmires.ASMLakeFeature;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.util.UrlUtil;
+import net.fabricmc.loader.impl.util.UrlUtil;
 import net.fabricmc.loader.util.version.SemanticVersionImpl;
 import net.fabricmc.loader.util.version.SemanticVersionPredicateParser;
 import org.apache.logging.log4j.LogManager;

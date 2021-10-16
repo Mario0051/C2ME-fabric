@@ -41,7 +41,7 @@ public class C2MECommands {
     }
 
     private static int noTickCommand(CommandContext<ServerCommandSource> ctx) {
-        final ServerChunkManager chunkManager = ctx.getSource().getWorld().toServerWorld().getChunkManager();
+        final ServerChunkManager chunkManager = (ServerChunkManager) ctx.getSource().getWorld().getWorld().getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
         final int noTickOnlyChunks = ((IChunkTicketManager) ticketManager).getNoTickOnlyChunks().size();
         final int noTickPendingTicketUpdates = ((IChunkTicketManager) ticketManager).getNoTickPendingTicketUpdates();
@@ -52,7 +52,7 @@ public class C2MECommands {
     }
 
     private static int mobcapsCommand(CommandContext<ServerCommandSource> ctx) {
-        final ServerWorld serverWorld = ctx.getSource().getWorld().toServerWorld();
+        final ServerWorld serverWorld = (ServerWorld) ctx.getSource().getWorld().getWorld();
         final ServerChunkManager chunkManager = serverWorld.getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
         final LongSet noTickOnlyChunks = ((IChunkTicketManager) ticketManager).getNoTickOnlyChunks();

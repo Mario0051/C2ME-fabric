@@ -140,7 +140,7 @@ String getVersionSuffix() {
         suffix = "-broken"
     }
     if (stdout.indexOf('-') < 0) {
-        return 0;
+        return 0
     }
     def split = stdout.split('-')
     return split[split.length - 2] + suffix

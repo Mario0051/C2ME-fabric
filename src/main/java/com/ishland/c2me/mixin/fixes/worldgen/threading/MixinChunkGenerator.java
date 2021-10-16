@@ -17,14 +17,14 @@ import java.util.List;
 public abstract class MixinChunkGenerator {
 
     @Mutable
-    @Shadow @Final private List<ChunkPos> strongholds;
+    @Shadow @Final private List<ChunkPos> field_24749;
 
-    @Shadow protected abstract void generateStrongholdPositions();
+    @Shadow protected abstract void method_28509();
 
     @Inject(method = "<init>(Lnet/minecraft/world/biome/source/BiomeSource;Lnet/minecraft/world/biome/source/BiomeSource;Lnet/minecraft/world/gen/chunk/StructuresConfig;J)V", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        this.strongholds = Collections.synchronizedList(strongholds);
-        generateStrongholdPositions(); // early init
+        this.field_24749 = Collections.synchronizedList(field_24749);
+        method_28509(); // early init
     }
 
 }

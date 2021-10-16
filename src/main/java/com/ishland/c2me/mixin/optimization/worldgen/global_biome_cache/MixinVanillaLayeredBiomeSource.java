@@ -27,9 +27,9 @@ public abstract class MixinVanillaLayeredBiomeSource extends BiomeSource impleme
     private BiomeCache cacheImpl = null;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(long seed, boolean legacyBiomeInitLayer, boolean largeBiomes, Registry<Biome> biomeRegistry, CallbackInfo info) {
+    private void onInit(long seed, boolean legacyBiomeInitLayer, boolean largeBiomes, CallbackInfo info) {
         final ThreadLocal<BiomeLayerSampler> samplerThreadLocal = ThreadLocal.withInitial(() -> BiomeLayers.build(seed, legacyBiomeInitLayer, largeBiomes ? 6 : 4, 4));
-        this.cacheImpl = new BiomeCache((biomeRegistry1, x, y, z) -> samplerThreadLocal.get().sample(biomeRegistry1, x, z), biomeRegistry, biomes);
+        this.cacheImpl = new BiomeCache((x, y, z) -> samplerThreadLocal.get().sample(x, z), biomes);
     }
 
     /**

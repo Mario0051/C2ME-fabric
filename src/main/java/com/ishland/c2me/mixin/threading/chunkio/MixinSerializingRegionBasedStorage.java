@@ -17,7 +17,7 @@ public abstract class MixinSerializingRegionBasedStorage implements ISerializing
     protected abstract <T> void update(ChunkPos pos, DynamicOps<T> dynamicOps, @Nullable T data);
 
     @Override
-    public void update(ChunkPos pos, NbtCompound tag) {
+    public void update(ChunkPos pos, CompoundTag tag) {
         this.update(pos, NbtOps.INSTANCE, tag);
     }
 

@@ -1,9 +1,8 @@
 package com.ishland.c2me.mixin.threading.chunkio;
 
 import com.ishland.c2me.common.threading.chunkio.ChunkIoThreadingExecutorUtils;
-import com.ishland.c2me.common.threading.chunkio.IAsyncChunkStorage;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.storage.RegionBasedStorage;
 import net.minecraft.world.storage.StorageIoWorker;
@@ -25,7 +24,7 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.Supplier;
 
 @Mixin(StorageIoWorker.class)
-public abstract class MixinStorageIoWorker implements IAsyncChunkStorage {
+public abstract class MixinStorageIoWorker {
 
     @Shadow protected abstract <T> CompletableFuture<T> run(Supplier<Either<T, Exception>> task);
 
@@ -34,27 +33,9 @@ public abstract class MixinStorageIoWorker implements IAsyncChunkStorage {
     @Shadow @Final private static Logger LOGGER;
     private ExecutorService threadExecutor;
 
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;getIoWorkerExecutor()Ljava/util/concurrent/Executor;"))
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;method_27958()Ljava/util/concurrent/Executor;"))
     private Executor redirectIoWorkerExecutor() {
         return threadExecutor = Executors.newSingleThreadExecutor(ChunkIoThreadingExecutorUtils.ioWorkerFactory);
-    }
-
-    @Override
-    public CompletableFuture<NbtCompound> getNbtAtAsync(ChunkPos pos) {
-        return this.run(() -> {
-            StorageIoWorker.Result result = this.results.get(pos);
-            if (result != null) {
-                return Either.left(result.nbt);
-            } else {
-                try {
-                    NbtCompound nbtCompound = this.storage.getTagAt(pos);
-                    return Either.left(nbtCompound);
-                } catch (Exception var4) {
-                    LOGGER.warn("Failed to read chunk {}", pos, var4);
-                    return Either.right(var4);
-                }
-            }
-        });
     }
 
     @Inject(method = "close", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/thread/TaskExecutor;close()V", shift = At.Shift.AFTER))

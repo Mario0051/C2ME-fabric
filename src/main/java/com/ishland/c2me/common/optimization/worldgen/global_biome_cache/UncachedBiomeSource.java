@@ -1,5 +1,6 @@
 package com.ishland.c2me.common.optimization.worldgen.global_biome_cache;
 
+import net.minecraft.util.registry.Registry;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.source.BiomeSource;
@@ -9,9 +10,8 @@ import java.util.List;
 
 public class UncachedBiomeSource extends BiomeSource {
     private final BiomeCache.BiomeProvider sampler;
-    private final Registry<Biome> registry;
 
-    public UncachedBiomeSource(List<Biome> biomes, BiomeCache.BiomeProvider sampler, Registry<Biome> registry) {
+    public UncachedBiomeSource(List<Biome> biomes, BiomeCache.BiomeProvider sampler) {
         super(biomes);
         this.sampler = sampler;
     }
@@ -28,6 +28,6 @@ public class UncachedBiomeSource extends BiomeSource {
 
     @Override
     public Biome getBiomeForNoiseGen(int biomeX, int biomeY, int biomeZ) {
-        return sampler.sample(this.registry, biomeX, biomeY, biomeZ);
+        return sampler.sample(biomeX, biomeY, biomeZ);
     }
 }

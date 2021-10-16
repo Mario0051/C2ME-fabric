@@ -27,11 +27,6 @@ public class ThreadLocalMutableBlockPos extends BlockPos.Mutable {
     }
 
     @Override
-    public BlockPos offset(Direction.Axis axis, int i) {
-        return delegate.get().offset(axis, i);
-    }
-
-    @Override
     public BlockPos rotate(BlockRotation rotation) {
         return delegate.get().rotate(rotation);
     }
@@ -87,13 +82,8 @@ public class ThreadLocalMutableBlockPos extends BlockPos.Mutable {
     }
 
     @Override
-    public Mutable move(Vec3i vec) {
-        return delegate.get().move(vec);
-    }
-
-    @Override
-    public Mutable clamp(Direction.Axis axis, int min, int max) {
-        return delegate.get().clamp(axis, min, max);
+    public Mutable method_27158(Direction.Axis axis, int min, int max) {
+        return delegate.get().method_27158(axis, min, max);
     }
 
     @Override
@@ -249,11 +239,6 @@ public class ThreadLocalMutableBlockPos extends BlockPos.Mutable {
     @Override
     public int getManhattanDistance(Vec3i vec) {
         return delegate.get().getManhattanDistance(vec);
-    }
-
-    @Override
-    public int getComponentAlongAxis(Direction.Axis axis) {
-        return delegate.get().getComponentAlongAxis(axis);
     }
 
     @Override

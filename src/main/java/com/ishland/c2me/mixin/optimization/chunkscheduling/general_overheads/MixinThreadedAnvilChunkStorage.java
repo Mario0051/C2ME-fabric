@@ -12,11 +12,11 @@ import java.util.Queue;
 @Mixin(ThreadedAnvilChunkStorage.class)
 public class MixinThreadedAnvilChunkStorage {
 
-    @Shadow @Final private Queue<Runnable> unloadTaskQueue;
+    @Shadow @Final private Queue<Runnable> field_19343;
 
     @Redirect(method = "unloadChunks", at = @At(value = "INVOKE", target = "Ljava/util/Queue;size()I"))
     private int redirectUnloadSize(Queue<?> queue) {
-        if (this.unloadTaskQueue == queue) return Integer.MAX_VALUE;
+        if (this.field_19343 == queue) return Integer.MAX_VALUE;
         return queue.size();
     }
 

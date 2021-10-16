@@ -1,7 +1,7 @@
 package com.ishland.c2me.mixin.threading.chunkio;
 
 import com.ishland.c2me.common.util.DeepCloneable;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.ChunkTickScheduler;
 import org.spongepowered.asm.mixin.Final;
@@ -14,7 +14,7 @@ import java.util.function.Predicate;
 public abstract class MixinChunkTickScheduler<T> implements DeepCloneable {
 
     @Shadow
-    public abstract NbtList toNbt();
+    public abstract ListTag toNbt();
 
     @Shadow
     @Final

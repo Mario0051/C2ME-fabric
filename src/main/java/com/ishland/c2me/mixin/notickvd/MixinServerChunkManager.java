@@ -28,7 +28,7 @@ public class MixinServerChunkManager {
     @Dynamic
     @Redirect(method = "method_37411", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;getTickingFuture()Ljava/util/concurrent/CompletableFuture;")) // TODO lambda expression in tickChunks after "broadcast"
     private static CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> redirectTickingFuture(ChunkHolder chunkHolder) {
-        return chunkHolder.getAccessibleFuture();
+        return chunkHolder.getBorderFuture();
     }
 
 

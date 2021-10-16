@@ -4,12 +4,11 @@ import com.ibm.asyncutil.locks.AsyncNamedLock;
 import com.ishland.c2me.common.GlobalExecutors;
 import com.ishland.c2me.common.threading.chunkio.AsyncSerializationManager;
 import com.ishland.c2me.common.threading.chunkio.ChunkIoMainThreadTaskUtils;
-import com.ishland.c2me.common.threading.chunkio.IAsyncChunkStorage;
 import com.ishland.c2me.common.threading.chunkio.ISerializingRegionBasedStorage;
 import com.ishland.c2me.common.util.SneakyThrow;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -92,105 +91,6 @@ public abstract class MixinThreadedAnvilChunkStorage extends VersionedChunkStora
 
     private Set<ChunkPos> scheduledChunks = new HashSet<>();
 
-    /**
-     * @author ishland
-     * @reason async io and deserialization
-     */
-    @Overwrite
-    private CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> loadChunk(ChunkPos pos) {
-        if (scheduledChunks == null) scheduledChunks = new HashSet<>();
-        synchronized (scheduledChunks) {
-            if (scheduledChunks.contains(pos)) throw new IllegalArgumentException("Already scheduled");
-            scheduledChunks.add(pos);
-        }
-
-        final CompletableFuture<NbtCompound> poiData = ((IAsyncChunkStorage) this.pointOfInterestStorage.worker).getNbtAtAsync(pos);
-
-        final CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> future = getUpdatedChunkNbtAtAsync(pos).thenApplyAsync(compoundTag -> {
-            if (compoundTag != null) {
-                try {
-                    if (compoundTag.contains("Level", 10) && compoundTag.getCompound("Level").contains("Status", 8)) {
-                        ChunkIoMainThreadTaskUtils.push();
-                        try {
-                            final ProtoChunk chunk = ChunkSerializer.deserialize(this.world, this.structureManager, this.pointOfInterestStorage, pos, compoundTag);
-                            chunk.setLastSaveTime(this.world.getTime());
-                            return chunk;
-                        } finally {
-                            ChunkIoMainThreadTaskUtils.pop();
-                        }
-                    }
-
-                    LOGGER.warn("Chunk file at {} is missing level data, skipping", pos);
-                } catch (Throwable t) {
-                    LOGGER.error("Couldn't load chunk {}, chunk data will be lost!", pos, t);
-                }
-            }
-            return null;
-        }, GlobalExecutors.executor).thenCombine(poiData, (protoChunk, tag) -> protoChunk).thenApplyAsync(protoChunk -> {
-            ((ISerializingRegionBasedStorage) this.pointOfInterestStorage).update(pos, poiData.join());
-            ChunkIoMainThreadTaskUtils.drainQueue();
-            if (protoChunk != null) {
-                this.method_27053(pos, protoChunk.getStatus().getChunkType());
-                return Either.left(protoChunk);
-            } else {
-                this.method_27054(pos);
-                return Either.left(new ProtoChunk(pos, UpgradeData.NO_UPGRADE_DATA));
-            }
-        }, this.mainThreadExecutor);
-        future.exceptionally(throwable -> null).thenRun(() -> {
-            synchronized (scheduledChunks) {
-                scheduledChunks.remove(pos);
-            }
-        });
-        return future;
-
-        // [VanillaCopy] - for reference
-        /*
-        return CompletableFuture.supplyAsync(() -> {
-         try {
-            this.world.getProfiler().visit("chunkLoad");
-            CompoundTag compoundTag = this.getUpdatedChunkNbt(pos);
-            if (compoundTag != null) {
-               boolean bl = compoundTag.contains("Level", 10) && compoundTag.getCompound("Level").contains("Status", 8);
-               if (bl) {
-                  Chunk chunk = ChunkSerializer.deserialize(this.world, this.structureManager, this.pointOfInterestStorage, pos, compoundTag);
-                  this.method_27053(pos, chunk.getStatus().getChunkType());
-                  return Either.left(chunk);
-               }
-
-               LOGGER.error((String)"Chunk file at {} is missing level data, skipping", (Object)pos);
-            }
-         } catch (CrashException var5) {
-            Throwable throwable = var5.getCause();
-            if (!(throwable instanceof IOException)) {
-               this.method_27054(pos);
-               throw var5;
-            }
-
-            LOGGER.error((String)"Couldn't load chunk {}", (Object)pos, (Object)throwable);
-         } catch (Exception var6) {
-            LOGGER.error((String)"Couldn't load chunk {}", (Object)pos, (Object)var6);
-         }
-
-         this.method_27054(pos);
-         return Either.left(new ProtoChunk(pos, UpgradeData.NO_UPGRADE_DATA, this.world));
-      }, this.mainThreadExecutor);
-         */
-    }
-
-    private CompletableFuture<NbtCompound> getUpdatedChunkNbtAtAsync(ChunkPos pos) {
-        return chunkLock.acquireLock(pos).toCompletableFuture().thenCompose(lockToken -> ((IAsyncChunkStorage) this.worker).getNbtAtAsync(pos).thenApply(compoundTag -> {
-            if (compoundTag != null)
-                return this.updateChunkNbt(this.world.getRegistryKey(), this.persistentStateManagerFactory, compoundTag);
-            else return null;
-        }).handle((tag, throwable) -> {
-            lockToken.releaseLock();
-            if (throwable != null)
-                SneakyThrow.sneaky(throwable);
-            return tag;
-        }));
-    }
-
     private ConcurrentLinkedQueue<CompletableFuture<Void>> saveFutures = new ConcurrentLinkedQueue<>();
 
     @Dynamic
@@ -232,7 +132,7 @@ public abstract class MixinThreadedAnvilChunkStorage extends VersionedChunkStora
                                         AsyncSerializationManager.pop(scope);
                                     }
                                 }, GlobalExecutors.executor)
-                                .thenAccept(compoundTag -> this.setNbt(chunkPos, compoundTag))
+                                .thenAccept(compoundTag -> this.setTagAt(chunkPos, compoundTag))
                                 .handle((unused, throwable) -> {
                                     lockToken.releaseLock();
                                     if (throwable != null)
@@ -243,7 +143,7 @@ public abstract class MixinThreadedAnvilChunkStorage extends VersionedChunkStora
                 // C2ME end
                 return true;
             } catch (Exception var5) {
-                LOGGER.error((String) "Failed to save chunk {},{}", (Object) chunkPos.x, chunkPos.z, var5);
+                LOGGER.error("Failed to save chunk {},{}", chunkPos.x, chunkPos.z, var5);
                 return false;
             }
         }

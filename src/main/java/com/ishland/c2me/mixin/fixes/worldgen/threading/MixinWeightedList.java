@@ -31,7 +31,7 @@ public class MixinWeightedList<U> implements IWeightedList<U> {
             entry.setShuffledOrder(random.nextFloat());
         });
         newList.entries.sort(Comparator.comparingDouble((object) -> { // C2ME - use new instance
-            return ((WeightedList.Entry)object).getShuffledOrder();
+            return object.getShuffledOrder();
         }));
         return newList; // C2ME - use new instance
     }

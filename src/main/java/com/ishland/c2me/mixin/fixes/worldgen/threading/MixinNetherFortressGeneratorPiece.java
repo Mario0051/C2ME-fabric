@@ -10,12 +10,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(NetherFortressGenerator.Piece.class)
 public class MixinNetherFortressGeneratorPiece {
 
-    @Redirect(method = "checkRemainingPieces", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;generatedCount:I", opcode = Opcodes.GETFIELD))
+    @Redirect(method = "method_14810", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;field_14502:I", opcode = Opcodes.GETFIELD))
     private int redirectGetPieceDataGeneratedCount(NetherFortressGenerator.PieceData pieceData) {
         return ((INetherFortressGeneratorPieceData) pieceData).getGeneratedCountAtomic().get();
     }
 
-    @Redirect(method = "pickPiece", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;generatedCount:I", opcode = Opcodes.PUTFIELD))
+    @Redirect(method = "method_14811", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;field_14502:I", opcode = Opcodes.PUTFIELD))
     private void redirectIncrementPieceDataGeneratedCount(NetherFortressGenerator.PieceData pieceData, int value) { // TODO Check when updating minecraft version
         ((INetherFortressGeneratorPieceData) pieceData).getGeneratedCountAtomic().incrementAndGet();
     }

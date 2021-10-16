@@ -5,8 +5,8 @@ import com.ishland.c2me.common.threading.chunkio.ChunkIoMainThreadTaskUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.server.world.ServerTickScheduler;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -46,17 +46,17 @@ public class MixinChunkSerializer {
     }
 
     @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;getPackedBlockEntityNbt(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/nbt/NbtCompound;"))
-    private static NbtCompound onChunkGetPackedBlockEntityNbt(Chunk chunk, BlockPos pos) {
+    private static CompoundTag onChunkGetPackedBlockEntityNbt(Chunk chunk, BlockPos pos) {
         final AsyncSerializationManager.Scope scope = AsyncSerializationManager.getScope(chunk.getPos());
-        if (scope == null) return chunk.getPackedBlockEntityNbt(pos);
+        if (scope == null) return chunk.getPackedBlockEntityTag(pos);
         final BlockEntity blockEntity = scope.blockEntities.get(pos);
         if (blockEntity != null) {
-            final NbtCompound compoundTag = new NbtCompound();
+            final CompoundTag compoundTag = new CompoundTag();
             if (chunk instanceof WorldChunk) compoundTag.putBoolean("keepPacked", false);
-            blockEntity.writeNbt(compoundTag);
+            blockEntity.toTag(compoundTag);
             return compoundTag;
         } else {
-            final NbtCompound nbtCompound = scope.pendingBlockEntityNbtsPacked.get(pos);
+            final CompoundTag nbtCompound = scope.pendingBlockEntityNbtsPacked.get(pos);
             if (nbtCompound == null) LOGGER.warn("Block Entity at {} for block {} doesn't exist", pos, chunk.getBlockState(pos).getBlock());
             return nbtCompound;
         }
@@ -75,9 +75,9 @@ public class MixinChunkSerializer {
     }
 
     @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerTickScheduler;toNbt(Lnet/minecraft/util/math/ChunkPos;)Lnet/minecraft/nbt/NbtList;"))
-    private static NbtList onServerTickSchedulerToNbt(@SuppressWarnings("rawtypes") ServerTickScheduler serverTickScheduler, ChunkPos chunkPos) {
+    private static ListTag onServerTickSchedulerToNbt(@SuppressWarnings("rawtypes") ServerTickScheduler serverTickScheduler, ChunkPos chunkPos) {
         final AsyncSerializationManager.Scope scope = AsyncSerializationManager.getScope(chunkPos);
-        return scope != null ? CompletableFuture.supplyAsync(() -> serverTickScheduler.toNbt(chunkPos), serverTickScheduler.world.serverChunkManager.mainThreadExecutor).join() : serverTickScheduler.toNbt(chunkPos);
+        return scope != null ? CompletableFuture.supplyAsync(() -> serverTickScheduler.toTag(chunkPos), serverTickScheduler.world.serverChunkManager.mainThreadExecutor).join() : serverTickScheduler.toTag(chunkPos);
     }
 
     @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/light/LightingProvider;get(Lnet/minecraft/world/LightType;)Lnet/minecraft/world/chunk/light/ChunkLightingView;"))

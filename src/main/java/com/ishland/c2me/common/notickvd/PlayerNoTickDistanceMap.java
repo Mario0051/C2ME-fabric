@@ -87,9 +87,6 @@ public class PlayerNoTickDistanceMap extends ChunkPosDistanceLevelPropagator {
         if (((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getWorld().getServer().getTicks() == lastTickNumber.get()) return;
         lastTickNumber.addAndGet(1);
         this.runPendingTicketUpdates();
-        final int pendingRawUpdateCount = this.getPendingUpdateCount();
-        if (pendingRawUpdateCount == 0) return;
-        this.applyPendingUpdates(Integer.MAX_VALUE);
     }
 
     private void runPendingTicketUpdates() {

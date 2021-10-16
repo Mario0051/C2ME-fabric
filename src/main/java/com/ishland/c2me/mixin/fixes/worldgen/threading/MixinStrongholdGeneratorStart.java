@@ -17,11 +17,11 @@ import java.util.List;
 public class MixinStrongholdGeneratorStart {
 
     @Mutable
-    @Shadow @Final public List<StructurePiece> pieces;
+    @Shadow @Final public List<StructurePiece> field_15282;
 
     @Inject(method = "<init>*", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        this.pieces = Collections.synchronizedList(pieces);
+        this.field_15282 = Collections.synchronizedList(field_15282);
     }
 
 }

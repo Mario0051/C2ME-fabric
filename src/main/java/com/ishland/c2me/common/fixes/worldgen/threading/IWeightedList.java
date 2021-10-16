@@ -4,6 +4,6 @@ import net.minecraft.util.collection.WeightedList;
 
 public interface IWeightedList<U> {
 
-    public WeightedList<U> shuffleVanilla();
+    WeightedList<U> shuffleVanilla();
 
 }

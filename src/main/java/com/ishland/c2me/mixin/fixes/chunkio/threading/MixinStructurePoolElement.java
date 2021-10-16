@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinStructurePoolElement {
 
     @Mutable
-    @Shadow @Final public static Codec<StructurePoolElement> CODEC;
+    @Shadow @Final public static Codec<StructurePoolElement> field_24953;
 
     @Dynamic
     @Inject(method = "<clinit>", at = @At("RETURN"))
     private static void onCLInit(CallbackInfo info) {
-        CODEC = new SynchronizedCodec<>(CODEC);
+        field_24953 = new SynchronizedCodec<>(field_24953);
     }
 
 }

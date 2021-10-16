@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerTickScheduler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.SimpleTickScheduler;
@@ -66,7 +66,7 @@ public class AsyncSerializationManager {
         public final TickScheduler<Fluid> fluidTickScheduler;
         public final Set<BlockPos> blockEntityPositions;
         public final Map<BlockPos, BlockEntity> blockEntities;
-        public final Map<BlockPos, NbtCompound> pendingBlockEntityNbtsPacked;
+        public final Map<BlockPos, CompoundTag> pendingBlockEntityNbtsPacked;
         private final AtomicBoolean isOpen = new AtomicBoolean(false);
 
         @SuppressWarnings("unchecked")
@@ -90,11 +90,11 @@ public class AsyncSerializationManager {
             this.blockEntityPositions = chunk.getBlockEntityPositions();
             this.blockEntities = this.blockEntityPositions.stream().map(chunk::getBlockEntity).filter(Objects::nonNull).filter(blockEntity -> !blockEntity.isRemoved()).collect(Collectors.toMap(BlockEntity::getPos, Function.identity()));
             {
-                Map<BlockPos, NbtCompound> pendingBlockEntitiesNbtPacked = new Object2ObjectOpenHashMap<>();
+                Map<BlockPos, CompoundTag> pendingBlockEntitiesNbtPacked = new Object2ObjectOpenHashMap<>();
                 for (BlockPos blockPos : this.blockEntityPositions) {
-                    final NbtCompound blockEntityNbt = chunk.getBlockEntityNbt(blockPos);
+                    final CompoundTag blockEntityNbt = chunk.getBlockEntityTag(blockPos);
                     if (blockEntityNbt == null) continue;
-                    final NbtCompound copy = blockEntityNbt.copy();
+                    final CompoundTag copy = blockEntityNbt.copy();
                     copy.putBoolean("keepPacked", true);
                     pendingBlockEntitiesNbtPacked.put(blockPos, copy);
                 }
@@ -148,7 +148,7 @@ public class AsyncSerializationManager {
             }
 
             @Override
-            public void setSectionStatus(BlockPos pos, boolean notReady) {
+            public void updateSectionStatus(BlockPos pos, boolean notReady) {
                 throw new UnsupportedOperationException();
             }
         }

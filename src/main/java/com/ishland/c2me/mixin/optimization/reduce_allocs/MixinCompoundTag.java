@@ -18,23 +18,13 @@ import net.minecraft.nbt.Tag;
 @Mixin(CompoundTag.class)
 public class MixinCompoundTag {
 
-    @Shadow @Final private Map<String, Tag> entries;
-
-    /**
-     * @author ishland
-     * @reason copy using fastutil map
-     */
-    @Overwrite
-    public CompoundTag copy() {
-        Map<String, Tag> map = new Object2ObjectOpenHashMap<>(Maps.transformValues(this.entries, Tag::copy));
-        return new CompoundTag(map);
-    }
+    @Shadow @Final private Map<String, Tag> tags;
 
     /**
      * copy using fastutil map
      */
-    @ModifyArg(method = "<init>()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtCompound;<init>(Ljava/util/Map;)V"), index = 0)
-    private static Map<String, Tag> modifyMap(Map<String, Tag> map) {
+    @ModifyArg(method = "<init>()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;<init>(Ljava/util/Map;)V"), index = 0)
+    private static Map<String, Tag> modifyMap(Map<String, Tag> tags) {
         return new Object2ObjectOpenHashMap<>();
     }
 

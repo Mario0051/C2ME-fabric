@@ -1,6 +1,6 @@
 package com.ishland.c2me.mixin.fixes.worldgen.threading.math;
 
-import net.minecraft.util.math.AffineTransformation;
+import net.minecraft.client.util.math.AffineTransformation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

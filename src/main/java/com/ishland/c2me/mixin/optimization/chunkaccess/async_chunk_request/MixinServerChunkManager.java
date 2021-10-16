@@ -78,7 +78,7 @@ public abstract class MixinServerChunkManager {
             // TODO [VanillaCopy] getChunkFuture
             ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
             long chunkPosLong = chunkPos.toLong();
-            int ticketLevel = 33 + ChunkStatus.getDistanceFromFull(leastStatus);
+            int ticketLevel = 33 + ChunkStatus.getTargetGenerationRadius(leastStatus);
             ChunkHolder chunkHolder = this.getChunkHolder(chunkPosLong);
             if (create) {
                 this.ticketManager.addTicketWithLevel(ASYNC_LOAD, chunkPos, ticketLevel, chunkPos);
@@ -94,7 +94,7 @@ public abstract class MixinServerChunkManager {
                 }
             }
 
-            final CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> future = this.isMissingForLevel(chunkHolder, ticketLevel) ? ChunkHolder.UNLOADED_CHUNK_FUTURE : chunkHolder.getChunkAt(leastStatus, this.threadedAnvilChunkStorage);
+            final CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> future = this.isMissingForLevel(chunkHolder, ticketLevel) ? ChunkHolder.UNLOADED_CHUNK_FUTURE : chunkHolder.createFuture(leastStatus, this.threadedAnvilChunkStorage);
             if (create) {
                 future.exceptionally(__ -> null).thenRunAsync(() -> {
                     this.ticketManager.removeTicketWithLevel(ASYNC_LOAD, chunkPos, ticketLevel, chunkPos);

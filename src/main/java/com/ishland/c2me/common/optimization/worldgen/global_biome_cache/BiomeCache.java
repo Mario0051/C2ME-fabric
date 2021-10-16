@@ -18,9 +18,8 @@ public class BiomeCache {
 
     private final UncachedBiomeSource uncachedBiomeSource;
 
-    public BiomeCache(BiomeProvider sampler, Registry<Biome> registry, List<Biome> biomes) {
-        this.registry = registry;
-        this.uncachedBiomeSource = new UncachedBiomeSource(biomes, sampler, registry);
+    public BiomeCache(BiomeProvider sampler, List<Biome> biomes) {
+        this.uncachedBiomeSource = new UncachedBiomeSource(biomes, sampler);
     }
 
     private final LoadingCache<ChunkPos, BiomeArray> biomeCache = CacheBuilder.newBuilder()
@@ -64,7 +63,7 @@ public class BiomeCache {
     }
 
     public interface BiomeProvider {
-        Biome sample(Registry<Biome> biomeRegistry, int x, int y, int z);
+        Biome sample(int x, int y, int z);
     }
 
 }
