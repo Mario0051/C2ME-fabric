@@ -45,8 +45,8 @@ public class MixinChunkSerializer {
         return scope != null ? scope.blockEntityPositions : chunk.getBlockEntityPositions();
     }
 
-    @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;getPackedBlockEntityNbt(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/nbt/NbtCompound;"))
-    private static CompoundTag onChunkGetPackedBlockEntityNbt(Chunk chunk, BlockPos pos) {
+    @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/Chunk;getPackedBlockEntityTag(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/nbt/CompoundTag;"))
+    private static CompoundTag onChunkgetPackedBlockEntityTag(Chunk chunk, BlockPos pos) {
         final AsyncSerializationManager.Scope scope = AsyncSerializationManager.getScope(chunk.getPos());
         if (scope == null) return chunk.getPackedBlockEntityTag(pos);
         final BlockEntity blockEntity = scope.blockEntities.get(pos);
@@ -56,9 +56,9 @@ public class MixinChunkSerializer {
             blockEntity.toTag(compoundTag);
             return compoundTag;
         } else {
-            final CompoundTag nbtCompound = scope.pendingBlockEntityNbtsPacked.get(pos);
-            if (nbtCompound == null) LOGGER.warn("Block Entity at {} for block {} doesn't exist", pos, chunk.getBlockState(pos).getBlock());
-            return nbtCompound;
+            final CompoundTag CompoundTag = scope.pendingBlockEntityNbtsPacked.get(pos);
+            if (CompoundTag == null) LOGGER.warn("Block Entity at {} for block {} doesn't exist", pos, chunk.getBlockState(pos).getBlock());
+            return CompoundTag;
         }
     }
 
@@ -74,8 +74,8 @@ public class MixinChunkSerializer {
         return scope != null ? scope.fluidTickScheduler : chunk.getFluidTickScheduler();
     }
 
-    @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerTickScheduler;toNbt(Lnet/minecraft/util/math/ChunkPos;)Lnet/minecraft/nbt/NbtList;"))
-    private static ListTag onServerTickSchedulerToNbt(@SuppressWarnings("rawtypes") ServerTickScheduler serverTickScheduler, ChunkPos chunkPos) {
+    @Redirect(method = "serialize", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerTickScheduler;toTag(Lnet/minecraft/util/math/ChunkPos;)Lnet/minecraft/nbt/ListTag;"))
+    private static ListTag onServerTickSchedulertoTag(@SuppressWarnings("rawtypes") ServerTickScheduler serverTickScheduler, ChunkPos chunkPos) {
         final AsyncSerializationManager.Scope scope = AsyncSerializationManager.getScope(chunkPos);
         return scope != null ? CompletableFuture.supplyAsync(() -> serverTickScheduler.toTag(chunkPos), serverTickScheduler.world.serverChunkManager.mainThreadExecutor).join() : serverTickScheduler.toTag(chunkPos);
     }
