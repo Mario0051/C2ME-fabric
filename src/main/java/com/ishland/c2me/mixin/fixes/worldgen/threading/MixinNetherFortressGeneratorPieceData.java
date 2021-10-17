@@ -16,13 +16,13 @@ public class MixinNetherFortressGeneratorPieceData implements INetherFortressGen
     private final AtomicInteger generatedCountAtomic = new AtomicInteger();
 
     @Dynamic
-    @Redirect(method = "*", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;generatedCount:I", opcode = Opcodes.GETFIELD))
+    @Redirect(method = "*", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;field_14502:I", opcode = Opcodes.GETFIELD))
     private int redirectGetGeneratedCount(NetherFortressGenerator.PieceData pieceData) {
         return this.generatedCountAtomic.get();
     }
 
     @Dynamic
-    @Redirect(method = "*", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;generatedCount:I", opcode = Opcodes.PUTFIELD), require = 0)
+    @Redirect(method = "*", at = @At(value = "FIELD", target = "Lnet/minecraft/structure/NetherFortressGenerator$PieceData;field_14502:I", opcode = Opcodes.PUTFIELD), require = 0)
     private void redirectSetGeneratedCount(NetherFortressGenerator.PieceData pieceData, int value) {
         this.generatedCountAtomic.set(value);
     }
